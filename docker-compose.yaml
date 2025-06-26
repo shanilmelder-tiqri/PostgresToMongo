@@ -1,0 +1,40 @@
+services:
+  postgres:
+    image: ankane/pgvector
+    container_name: postgres
+    volumes:
+        - postgresdata:/var/lib/postgresql
+    environment:
+      POSTGRES_PASSWORD: Pass@123
+    ports:
+      - "5433:5432"
+    networks:
+      - app-network
+  mongo:
+    image: mongo
+    container_name: mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - mongo-data:/data/db
+      - mongo-config:/data/configdb
+    networks:
+      - app-network
+  postgrestomongo:
+    image: postgrestomongo
+    container_name: postgrestomongoapp
+    build:
+      context: .
+      dockerfile: PosgresToMongo/Dockerfile
+    networks:
+      - app-network
+volumes:
+  postgresdata:
+  mongo-data:
+  mongo-config:
+networks:
+  app-network:

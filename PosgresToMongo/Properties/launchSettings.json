@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "PostgresToMongo": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

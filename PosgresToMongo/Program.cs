@@ -11,6 +11,7 @@ var configuration = new ConfigurationBuilder()
 
 var services = new ServiceCollection();
 ConfigureServices(services, configuration);
+RunMigration(services);
 
 Console.WriteLine("Started reading Postgres data.......");
 
@@ -46,4 +47,10 @@ static void ConfigureServices(IServiceCollection services, IConfiguration config
         options.UseNpgsql(configuration.GetConnectionString("PostgresConnection")));
     services.AddDbContext<MongoDbContext>(options =>
         options.UseMongoDB(configuration.GetConnectionString("MongoDBConnection") ?? "", configuration["MongoDB"] ?? ""));
+}
+
+static void RunMigration(IServiceCollection services)
+{
+    var context = services.BuildServiceProvider().GetRequiredService<PostgresDbContext>();
+    context.Database.Migrate();
 }
