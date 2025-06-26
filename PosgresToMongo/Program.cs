@@ -4,14 +4,17 @@ using Microsoft.Extensions.DependencyInjection;
 using PostgresToMongo.Data;
 using PostgresToMongo.Repositories;
 
+var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
 
 var configuration = new ConfigurationBuilder()
-    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{environment}.json", optional: false, reloadOnChange: true)
     .Build();
 
 var services = new ServiceCollection();
 ConfigureServices(services, configuration);
-RunMigration(services);
+await RunMigration(services, configuration);
+
+Console.WriteLine(configuration.GetConnectionString("MongoDBConnection"));
 
 Console.WriteLine("Started reading Postgres data.......");
 
@@ -49,8 +52,13 @@ static void ConfigureServices(IServiceCollection services, IConfiguration config
         options.UseMongoDB(configuration.GetConnectionString("MongoDBConnection") ?? "", configuration["MongoDB"] ?? ""));
 }
 
-static void RunMigration(IServiceCollection services)
+static async Task RunMigration(IServiceCollection services, IConfiguration configuration)
 {
     var context = services.BuildServiceProvider().GetRequiredService<PostgresDbContext>();
     context.Database.Migrate();
+
+    if (Convert.ToBoolean(configuration["SeedData"]))
+    {
+        await SeedData.SeedDataAsync(context);
+    }
 }
